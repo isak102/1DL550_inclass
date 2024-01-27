@@ -21,7 +21,26 @@ void grayscale_image_simd_avx(PPMImage *ppm)
     float *R, *G, *B;
     getRGBArrays(&R, &G, &B, ppm);
 
-    //Fill this code
+    __m256 red_scale = _mm256_set1_ps(0.21);
+    __m256 green_scale = _mm256_set1_ps(0.72);
+    __m256 blue_scale = _mm256_set1_ps(0.07);
+
+    __m256 r, g, b, sum;
+    for (long i = 0; i < ppm->img_size; i+=8) {
+        r = _mm256_load_ps(&R[i]);
+        g = _mm256_load_ps(&G[i]);
+        b = _mm256_load_ps(&B[i]);
+
+
+        r = _mm256_mul_ps(r, red_scale);
+        g = _mm256_mul_ps(g, green_scale);
+        b = _mm256_mul_ps(b, blue_scale);
+
+        sum = _mm256_add_ps(r, g);
+        sum = _mm256_add_ps(sum, b);
+
+        _mm256_store_ps(&ppm->grayscale_data[i], sum);
+    }
 }
 
 void grayscale_image_simd_sse(PPMImage *ppm)
